@@ -16,16 +16,16 @@ Third party projects
 This project includes the following 3rd party projects, all under MIT
 or other MIT-compatible public licences:
 
- * [coxpcall](http://coxpcall.luaforge.net/): part of the Kepler
-   project, (c) Roberto Ierusalimschy, André Carregal, Thomas Harning
-   Jr., Ignacio Burgueño, Gary NG, Fábio Mascarenhas
+- [Coxpcall](http://coxpcall.luaforge.net/): part of the Kepler
+  project, (c) Roberto Ierusalimschy, André Carregal, Thomas Harning
+  Jr., Ignacio Burgueño, Gary NG, Fábio Mascarenhas
 
- * [LuaSocket](http://w3.impa.br/~diego/software/luasocket/), (c)
-   Diego Nehab. Notice that the embedded version is heavily modified
-   to integrate with the scheduler.
+- [LuaSocket](http://w3.impa.br/~diego/software/luasocket/), (c)
+  Diego Nehab. Notice that the embedded version is heavily modified
+  to integrate with the scheduler.
 
- * [LuaPack](http://www.tecgraf.puc-rio.br/~lhf/ftp/lua/), (c) Luiz
-   Henrique de Figueiredo.
+- [LuaPack](http://www.tecgraf.puc-rio.br/~lhf/ftp/lua/), (c) Luiz
+  Henrique de Figueiredo.
 
 
 Sierra Wireless Modules
@@ -36,14 +36,20 @@ Wireless. Although the current release lacks a compiled documentation,
 every public API is properly documented with LuaDoc-compatible comment
 headers.
 
-* `sched`: the scheduler itself
-** `sched.lock`: mutexes and synchronization
-** `sched.pipe`: communication queues
-* `checks`: a library to quickly and easily check Lua function and arguments,
+- `sched`: the scheduler itself
+
+  - `sched.lock`: mutexes and synchronization
+
+  - `sched.pipe`: communication queues
+
+- `checks`: a library to quickly and easily check Lua function and arguments,
    and generate proper error message when invalid arguments are detected.
-* `print`: a Lua table pretty-printer, used among others by the shell
-* `shell.telnet`: an interactive shell served over telnet
-* `log`: a configurable applications log system, allowing fine-grained
+
+- `print`: a Lua table pretty-printer, used among others by the shell
+
+- `shell.telnet`: an interactive shell served over telnet
+
+- `log`: a configurable applications log system, allowing fine-grained
   control over verbosity, as well as selective redirection of logs
   toward different back-ends.
 
