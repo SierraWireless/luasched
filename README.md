@@ -14,7 +14,7 @@ Third party projects
 --------------------
 
 This project includes the following 3rd party projects, all under MIT
-or other MIT-compatible public licences:
+or other MIT-compatible public licenses:
 
 - [Coxpcall](http://coxpcall.luaforge.net/): part of the Kepler
   project, (c) Roberto Ierusalimschy, André Carregal, Thomas Harning
