@@ -1,6 +1,23 @@
-This is a preliminary release of the coroutine-based Lua scheduler at
-the core of Sierra Wireless' M2M development framework. It allows
-collaborative multitasking and synchronization within a single Lua state. 
+(c) Sierra Wireless, 2007-2012
+
+About
+=====
+
+Sched is a Lua collaborative scheduler: it allows several Lua tasks to
+run in parallel, and to communicate together when they need to
+interact.
+
+It offers a convinient way to write programs which address multiple
+I/O driven issues simultaneously, with much less hassle than with
+preemptive multithreading frameworks; it also doesn't require
+developers to adopt unusual programming styles, as expected by Erlang,
+map-reduce variants, or callback-driven frameworks such as node.js.
+Among other appropriate usages, it allows to easily write and deploy
+the applications typically powering machine-to-machine
+infrastructures.
+
+This repository is a preliminary and separate release of Lua sched,
+normally part of Sierra Wireless' M2M development framework.
 
 A developer preview of Sierra Wireless' Lua SDK is available on 
 [the Lua Workshop '11 website](http://www.lua.org/wshop11.html)
