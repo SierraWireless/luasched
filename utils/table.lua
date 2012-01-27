@@ -17,10 +17,13 @@ assert(not table.pack, "This was temporary, waiting for Lua5.2. Remove table.pac
 
 --------------------------------------------------------------------------------
 --- Packs a variable number of arguments into a table.
---  This is a temporary function until we switch to 5.2.
+--  This is a temporary function until we switch to Lua 5.2.
+--
 --  Returns a new table with all parameters stored into keys 1, 2, etc. and with a field "n" with
 --  the total number of parameters. Also returns, as a second result, the total number of parameters.
+--
 --  Note that the resulting table may not be a sequence.
+--
 --  Note that when loading utils.table module, this pack function is also added to global/std table module.
 -- @param ... arguments to pack
 -- @return a table that contains all the arguments followed by the number of arguments.
@@ -64,7 +67,26 @@ end
 -- @param t2 second table to compare.
 -- @param norecurse boolean value to disable recursive diff.
 -- @return the diff result as a table.
---------------------------------------------------------------------------------
+-- @usage
+--> t1 = { a = 1, b=3, c = "foo"}
+--> t2 = { a = 1, b=3, c = "foo"}
+--> :diff(t1, t2)
+--= {  }
+--> t1 = { a = 1, b=3, c = "foo"}
+--> t2 = { a = 1, b=4, c = "foo"}
+--> :diff(t1, t2)
+--= { "b" }
+--> t1 = { a = 1, b=3, c = "foo"}
+--> t2 = { a = 1, b=3}
+--> :diff(t1, t2)
+--= { "c" }
+--> t1 = { b=3, c = "foo", d="bar"}
+--> t2 = { a = 1, b=3, c = "foo"}
+--> :diff(t1, t2)
+--= {
+--   "a",
+--   "d" }
+-----------------------------
 function diff(t1, t2, norecurse)
     local d = {}
     local t3 = {}
@@ -86,6 +108,7 @@ end
 -- Regular array is a table with only conscutive integer keys (no holes).
 -- @param T table to check.
 -- @return true or false.
+-- @function isArray
 --------------------------------------------------------------------------------
 function isarray(T)
     local n = 1
@@ -109,16 +132,24 @@ end
 
 
 --------------------------------------------------------------------------------
---- Map function.
--- Execute a function on each element of a map.
+-- Executes a function on each element of a table.
+--
 -- If recursive is non false the map function will be called recursively.
+--
 -- If inplace is set to true, then the table is modified in place.
--- The function is called with key and value as a parameter
+--
+-- The function is called with key and value as a parameter.
 -- @param T the table to apply map on.
 -- @param func the function to call for each value of the map.
 -- @param recursive if non false, the map is executed recusively.
 -- @param inplace if non false, the table is modified in place.
 -- @return the table with each value mapped by the function
+-- @usage local data = { key1 = "val1", key2 = "val2"}
+-- local function foo(key, value) print("foo:" key, value) end
+-- map(data, foo)
+-- -> will print:
+-- foo:    key1        val1
+-- foo:    key2        val2
 --------------------------------------------------------------------------------
 function map(T, func, recursive, inplace)
     local newtbl = inplace and T or {}
@@ -137,6 +168,7 @@ end
 --- Iterator that iterates on the table in key ascending order.
 -- @param t table to iterate.
 -- @return iterator function.
+-- @function sortedPairs
 --------------------------------------------------------------------------------
 function sortedpairs(t)
     local a = {}
@@ -159,6 +191,7 @@ end
 -- @param t table to iterate.
 -- @param prefix path prefix to prepend to the key path returned.
 -- @return iterator function.
+-- @function recursivePairs
 --------------------------------------------------------------------------------
 function recursivepairs(t, prefix)
     checks('table', '?string')
@@ -186,6 +219,7 @@ end
 -- @param t1 first table to traverse.
 -- @param ... additional tables to traverse.
 -- @return iterator function.
+--@function multiPairs
 --------------------------------------------------------------------------------
 function multipairs(t1, ...)
     local state = { tables = {t1, ...}, i=1, k=next(t1) }

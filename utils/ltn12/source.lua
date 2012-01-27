@@ -1,5 +1,11 @@
 ---LTN12 source utils.
+-- LNT12 stands for Lua Technical Note #12. It deals with sources, sinks, filters, etc.
 --
+-- You can read the official technical note at [Filters Sources And Sinks](http://lua-users.org/wiki/FiltersSourcesAndSinks) article page.
+--
+-- LTN12 official module is shipped with LuaSocket. Official LTN12 API documentation can be found at [LTN12 Official module](http://w3.impa.br/~diego/software/luasocket/ltn12.html) page.
+--
+-- This module provides extra LTN12 sources.
 --
 --@module utils.ltn12.source
 

@@ -10,7 +10,7 @@ local _G = _G
 
 local M={}
 --------------------------------------------------------------------------------
---- Compiles a buffer (i.e. a list of strings) into an executable function.
+--- Compiles a buffer (ie a list of strings) into an executable function.
 -- As opposed to [loadstring](http://www.lua.org/manual/5.1/manual.html#pdf-loadstring) 
 -- it does not require allocating a single string for
 -- the whole source, thereby saving on memory load. Moreover, if the

@@ -1,5 +1,6 @@
 --------------------------------------------------------------------------------
 -- Thread-bound lock objects
+-- =========================
 --
 -- A lock allows to define atomic units of code execution: 
 -- a portion of code that is protected by a lock will never be executed by more
@@ -18,6 +19,7 @@
 -- to do so explicitly.
 --
 -- API
+-- ---
 --
 -- lock.new()
 --      return a new instance of a lock.
@@ -38,6 +40,7 @@
 
 --------------------------------------------------------------------------------
 -- Associative lock objects
+-- ------------------------
 --
 -- Function lock (object) allows to associate a lock to an arbitrary object.
 -- This API creates a standard lock (as above). It removes the burden of
@@ -59,6 +62,7 @@
 
 --------------------------------------------------------------------------------
 -- Synchronized functions
+-- ----------------------
 --
 -- A common pattern is to have a function that must not be called more than once
 -- at a given time: if the function is already running in another thread, one

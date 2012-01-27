@@ -80,7 +80,7 @@ local insert, remove, os_time = table.insert, table.remove, os.time
 -- A registry of all currently active pipes. This is intended as a debug aid,
 -- and can be safely commented out if not needed
 --------------------------------------------------------------------------------
-proc.pipes = setmetatable({}, {__mode='kv'})
+-- proc.pipes = setmetatable({}, {__mode='kv'})
 
 --------------------------------------------------------------------------------
 -- Create a new pipe

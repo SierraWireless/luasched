@@ -28,20 +28,24 @@ local split,clean,segments, get, set, gsplit, concat, find
 local function pathconcat(pt, starti, endi)
     local t = {}
     local prev
+    local empties = 0
     starti = starti or 1
     endi = endi or #pt
     
     for i = starti, endi do
         local v = pt[i]
         if not v then break
+        elseif v == '' then
+        	empties = empties+1
         else
             table.insert(t, prev)
             prev = v
         end
     end
     table.insert(t, prev)
-
-    return table.concat(t, '.', 1, endi-starti+1)
+    --log('PATH', 'INFO', "pathconcat(%s, %d, %d) generates table %s, wants indexes %d->%d",
+    --    sprint(pt), starti, endi, sprint(t), 1, endi-starti+1-empties)
+    return table.concat(t, '.', 1, endi-starti+1-empties)
 end
 
 --------------------------------------------------------------------------------
@@ -107,12 +111,13 @@ end
 function gsplit (path)
     checks ('string')
     local segs  = segments(path)
-    local starti, endi = 0 , #segs      
+    local nsegs = #segs
+    local limit = nsegs
     local function f()
-        local start = starti
-        if starti > endi then return nil -- last round
-        else starti = starti + 1 end        
-        return pathconcat(segs, start+1, endi), pathconcat(segs, 1, start)        
+        if limit == -1 then return nil, nil end
+        local a, b = pathconcat(segs, 1, limit), pathconcat(segs, limit+1, nsegs)
+        limit = limit - 1
+        return a, b
     end
     return f
 end
@@ -170,7 +175,7 @@ function segments(path)
     return t
 end
 
---------------------------------------------------------------------------------
+
 -- Retrieves the element in a sub-table corresponding to the path.
 -- @usage config = {toto={titi={tutu = 5}}}
 --     find(config, "toto.titi") -- will return the table titi
