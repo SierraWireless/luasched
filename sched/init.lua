@@ -1,19 +1,21 @@
-
 --------------------------------------------------------------------------------
+-- Collaborative task scheduler.
 --
 -- *(c) Sierra Wireless, 2007-2012*
--- 
--- Sched is a collaborative scheduler: it allows several tasks to run in
--- parallel, and to communicate together when they need to interact.
+--
+-- Sched is a Lua collaborative scheduler: it allows several Lua tasks to
+-- run in parallel, and to communicate together when they need to
+-- interact.
 -- 
 -- It offers a convinient way to write programs which address multiple
--- issues simultaneously, with much less hassle than with preemptive
--- multithreading frameworks, and without requiring such an unusual
--- programming style as expected by Erlang or map-reduce
--- systems. Among other appropriate usages, it allows to easily write
--- and deploy the applications typically powering machine-to-machine
+-- I/O driven issues simultaneously, with much less hassle than with
+-- preemptive multithreading frameworks; it also doesn't require
+-- developers to adopt unusual programming styles, as expected by Erlang,
+-- map-reduce variants, or callback-driven frameworks such as node.js.
+-- Among other appropriate usages, it allows to easily write and deploy
+-- the applications typically powering machine-to-machine
 -- infrastructures.
--- 
+--
 -- 
 -- General principles
 -- ==================

@@ -44,6 +44,11 @@ or other MIT-compatible public licenses:
 - [LuaPack](http://www.tecgraf.puc-rio.br/~lhf/ftp/lua/), (c) Luiz
   Henrique de Figueiredo.
 
+- The documentation is generated with Steve Donovan's
+  [LDoc](http://github.com/stevedonovan/LDoc): LDoc HTML and CSS
+  templates are shipped with Luasched, the former (c) Steve Donovan,
+  the latter (c) Yahoo1 Inc.
+
 
 Sierra Wireless Modules
 -----------------------

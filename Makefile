@@ -14,6 +14,7 @@ all: checks.so log/store.so socket/core.so telnet.so pack.so
 fetch:
 	lua fetch.lua
 
+.PHONY: all fetch clean doc
 
 CHECKS_H1 = checks
 CHECKS_H  = $(patsubst %,$(SRC)/%.h,$(CHECKS_H1))
@@ -74,3 +75,6 @@ mime.so: $(MIME_O) $(MIME_H)
 
 clean:
 	rm -f *.so $(SRC)/*.o $(SRC)/log/*.o log/*.so $(SRC)/socket/*.o socket/*.so $(SRC)/telnet/*.o
+
+doc:
+	ldoc .
