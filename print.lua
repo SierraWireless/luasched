@@ -23,7 +23,7 @@ end
 -- tables. If nil/false, tables are rendered without carriage returns.
 ------------------------------------------------------------------------------
 function vprint (write, print_indent, ...)
-   local cache = { }
+   local in_progress = { }
    local indent_level = 0
    local tinsert = table.insert
    local function aux(x)
@@ -33,38 +33,56 @@ function vprint (write, print_indent, ...)
       elseif t=="number"  then write(tostring(x))
       elseif t=="nil"     then write("nil")
       elseif t=="table"   then
-         if cache[x] then write(tostring(table)) else
-            cache[x] = true
+         if in_progress[x] then write(tostring(table)) else
+            in_progress[x] = true
             indent_level = indent_level+1
 
-            -- get the list of keys
-            local keys = {}
-            for k, _ in pairs(x) do tinsert(keys, k) end
-            local len = #keys
+            local function print_separator()
+                if print_indent then write(",\r\n" .. (" "):rep(print_indent * indent_level))
+                else write(", ") end
+            end
 
-            if print_indent and len > 1 then
-                write("{\r\n" .. string.rep(" ", print_indent * indent_level))
-            else write "{ " end
+            -- number of elements according to pairs(): zero, one, many
+            local at_least_one, more_than_one = false, false
+            for _ in pairs(x) do
+                if at_least_one then more_than_one=true; break
+                else at_least_one=true end
+            end
 
+            if not at_least_one then write "{ }"; return
+            elseif not more_than_one or not print_indent then write "{ "
+            else write("{\r\n" .. (" "):rep(print_indent * indent_level)) end
 
-            for i, k in ipairs(keys) do
-               -- implicit array idx
-               if k==i then -- do nothing...
-               -- keyword key
-               elseif type(k)=="string" and k:match"^[%a_][%w_]*$" then write(k .. " = ")
-               -- generic key
-               else write("["); aux(k); write("] = ") end
-               aux(x[k])
-               if i<len then
-                  if print_indent then
-                     write(",\r\n" .. string.rep(" ", print_indent * indent_level))
-                  else write(", ") end
-               end
+            local list_keys = { }
+            local last_list_key = 0
+            repeat
+                local i = last_list_key + 1
+                local occupied = x[i]~=nil
+                if occupied then list_keys[i]=true; last_list_key=i end
+            until not occupied
+
+            for i=1, last_list_key do
+                if i>1 then print_separator() end
+                aux(x[i])
+            end
+            
+            local first_hash_pair = true
+            for k, v in pairs(x) do
+                if not list_keys[k] then -- don't reprint the list-part
+                    -- separator
+                    if not first_hash_pair or last_list_key~=0 then print_separator() end
+                    first_hash_pair = false
+                    -- key
+                    if type(k)=="string" and k:match"^[%a_][%w_]*$" then write(k .. " = ")
+                    else write("["); aux(k); write("] = ") end
+                    -- value
+                    aux(v)
+                end
             end
             write (" }")
 
             indent_level = indent_level-1
-            cache[x] = nil
+            in_progress[x] = nil
          end
       else write(tostring(x)) end
    end
@@ -97,3 +115,5 @@ end
 function sprint(...)
     return siprint(false, ...)
 end
+
+function printf(...) return print(string.format(...)) end

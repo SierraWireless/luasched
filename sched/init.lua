@@ -1,7 +1,6 @@
---------------------------------------------------------------------------------
--- Collaborative task scheduler.
---
 -- *(c) Sierra Wireless, 2007-2012*
+
+--------------------------------------------------------------------------------
 --
 -- Sched is a Lua collaborative scheduler: it allows several Lua tasks to
 -- run in parallel, and to communicate together when they need to
@@ -154,8 +153,8 @@
 --      local event, status, result = sched.wait(some_task, 'die')
 -- 
 -- It will block the current task until the task `some_task` terminates.
--- @{sched.wait} returns the triggering event (here always `'die'`), and
--- extra signal arguments. In the case of task `'die'` events, those are
+-- @{#sched.wait} returns the triggering event (here always `'die'`), 
+-- and extra signal arguments. In the case of task `'die'` events, those are
 -- the status (whether the task exited successfully or because of an
 -- error), and any result returned by the function (or an error message
 -- if `status` is `false`).
@@ -168,7 +167,7 @@
 -- 
 -- If a number is added in the events list, it's a timeout in seconds: if
 -- none of the subscribed events occur before the timeout elapses, then
--- @{sched.wait}() returns with the event `'timeout'`:
+-- @{#sched.wait} returns with the event `'timeout'`:
 -- 
 --      local event = sched.wait('NETMAN', {'MOUNTED', 'MOUNT_FAILED', 30})
 --      if     event == 'MOUNTED' then print "Success!"
@@ -188,14 +187,14 @@
 -- `sched.wait(X, {'*', 30})`.
 -- 
 -- A task might need to wait on signals sent by several potential
--- emitters. This need is addressed by the @{sched.multiWait}() API,
--- which works as @{sched.wait}() except that it takes a list of
+-- emitters. This need is addressed by the @{sched.multiWait} API,
+-- which works as @{sched.wait} except that it takes a list of
 -- emitters rather than a single one.
 -- 
 -- Finally, a task can reschedule itself without blocking. It gives
 -- other tasks an opportunity to run; once every other task had a
 -- chance to run, the rescheduled task can restart. Task rescheduling
--- is performed by calling @{sched.wait}() without argument.
+-- is performed by calling @{sched.wait} without argument.
 --
 --     for i=1, BIG_NUMBER do
 --         perform_long_computation_chunk(i)
@@ -211,27 +210,27 @@
 -- registered signal is registered. The variants of hook attachment
 -- are:
 -- 
--- * @{sched.sigHook}`(emitter, events, func, hook_args...)`: the function
+-- * @{#sched.sigHook}`(emitter, events, func, hook_args...)`: the function
 --   `func(event, hook_args..., signal_args...)` will be run every time
 --   `sched.signal(emitter, event, signal_args...)` is triggered. It is
 --   run synchronously, i.e. before `sched.signal()` returns, so it can't
 --   contain any blocking API call. It will keep being triggered
 --   every time one of the registered signal occurs, until the reference
---   returned by @{sched.sigHook}() is passed to @{sched.kill}().
+--   returned by @{#sched.sigHook} is passed to @{#sched.kill}.
 --   
--- * @{sched.sigOnce}`(emitter, events, func, hook_args...)`: behaves as
---   @{sched.sigHook}(), except that it's only run once. The hook
+-- * @{#sched.sigOnce}`(emitter, events, func, hook_args...)`: behaves as
+--   @{#sched.sigHook}, except that it's only run once. The hook
 --   function is also forbidden from performing blocking calls.
 -- 
--- * @{sched.sigRun}`(emitter, events, func, hook_args...)`: works as
---   @{sched.sigHook}(), except that the function is run as a scheduled
+-- * @{#sched.sigRun}`(emitter, events, func, hook_args...)`: works as
+--   @{#sched.sigHook}, except that the function is run as a scheduled
 --   task. As a result, there is no guarantee that it will be executed as
 --   soon as the signal has been sent (there might be a delay), but it is
 --   allowed to call blocking APIs. For most usages, this form is to be
 --   preferred as simpler. 
 -- 
--- * @{sched.sigRunOnce}`(emitter, events, func, hook_args...)`: behaves
---   as @{sched.sigRun}(), except that it's only run once. The hook
+-- * @{#sched.sigRunOnce}`(emitter, events, func, hook_args...)`: behaves
+--   as @{#sched.sigRun}, except that it's only run once. The hook
 --   function is also allowed to perform blocking calls.
 -- 
 -- There is a guarantee that hooks won't miss an signal. Blocking a task
@@ -244,7 +243,7 @@
 -- 
 -- Therefore, if it is important not to lose any occurrence of a signal, a
 -- waiting task is not an adequate solution: either handle them in a
--- hook, or pass them through a @{pipe}.
+-- hook, or pass them through a pipe.
 -- 
 -- 
 -- Example
@@ -285,12 +284,12 @@
 -- Tasks life cycle
 -- ----------------
 -- 
--- Tasks are created by @{sched.run}(): it takes a function, and
+-- Tasks are created by @{#sched.run}: it takes a function, and
 -- optionally arguments to this function, and runs it as a separate,
 -- parallel task. It also returns the created task, as a regular
--- coroutine. The main use for this is to either cancel it with
--- @{sched.kill}, or wait for its termination with `sched.wait(task,
--- 'die')`.
+-- coroutine. The main use for this is to either cancel it
+-- with @{#sched.kill}, or wait for its termination with 
+-- `sched.wait(task,'die')`.
 -- 
 -- Tasks are sorted in an internal table:
 -- 
@@ -299,7 +298,7 @@
 --   
 -- * tasks which are ready to run are stacked in a `__tasks.ready` list.
 -- 
--- A task created with @{sched.run} doesn't start immediately, it is
+-- A task created with @{#sched.run} doesn't start immediately, it is
 -- merely stacked in `__tasks.ready`. When the current task dies or
 -- blocks, the next one in `__tasks.ready` takes over; it can be the last
 -- created one, or another one which went ready before it.
@@ -308,7 +307,7 @@
 -- waiting for this signal, one can synchornize on a task's completion.
 -- The `'die'` signal has additional arguments: a status (`true` if the
 -- task returned successfully, `false` if it has been aborted by an
--- error, `"killed"` if the task has been cancelled by @{sched.kill}),
+-- error, `"killed"` if the task has been cancelled by @{#sched.kill}),
 -- followed by either the returned value(s) or the error message. Here
 -- are some examples:
 -- 
@@ -352,11 +351,11 @@
 -- 
 -- Finally, there is the issue of launching the scheduler at the
 -- top-level. This issue is OS-dependent, but on POSIX-like systems, this
--- is done by calling @{sched.loop}: this function will run every task in
+-- is done by calling `sched.loop`: this function will run every task in
 -- a loop, and perform timer management in order to avoid busy waits. It
 -- never returns, unless you call `os.exit`. Therefore, before starting
 -- the loop, it is important to have prepared some tasks to launch, with
--- @{sched.run}.
+-- @{#sched.run}.
 -- 
 -- As an example, here is a complete program which starts a telnet server
 -- and writes the time in parallel, in a file, every 10 seconds. 
@@ -389,7 +388,7 @@
 -- 
 -- @author Fabien Fleutot
 -- @module sched
---------------------------------------------------------------------------------
+
 
 require 'log'
 require 'checks'
@@ -414,7 +413,7 @@ local LOWERCASE_ALIASES = true
 --
 -- When this magic token is passed to a resumed task, it's expected to kill itself
 -- with an `error "KILL"`.
--- Used by @{sched.kill}() to order the current task's suicide, and @{sched.wait}() to perform it.
+-- Used by @{#sched.kill}() to order the current task's suicide, and @{sched.wait}() to perform it.
 --
 local KILL_TOKEN = setmetatable({ "<KILL-TOKEN>" },
     { __tostring = function() return "Killed thread" end})
@@ -450,7 +449,7 @@ __tasks.ready = { }
 -- Prevents a garbage collector from removing a list of registered cells which
 -- are currently being processed.
 ------------------------------------------------------------------------------
-__tasks.hold  = false
+__tasks.signal_processing  = false
 
 ------------------------------------------------------------------------------
 -- Table of tasks and hooks waiting for signals.
@@ -496,11 +495,12 @@ local function iscfunction(f) return getinfo(f).what=='C' end
 -- `sched.run(f[, args...])` schedules `f(args...)` as a new task, which will
 -- run in parallel with the current one, after the current one yields.
 --
+-- @function [parent=#sched] run
 -- @param f function or task to run
 -- @param ... optional arguments to pass to param `f`
 -- @return new thread created to run the function
 --
-------------------------------------------------------------------------------
+
 function sched.run (f, ...)
     checks ('function')
     local ready = __tasks.ready
@@ -510,7 +510,7 @@ function sched.run (f, ...)
     local thread = coroutine.create (f)
     local cell   = { thread, ... }
     table.insert (ready, cell)
-    log.trace ('sched', 'DEBUG', "RUN %s", tostring (thread))
+    log.trace ('sched', 'DEBUG', "SCHEDULE %s", tostring (thread))
 
     return thread
 end
@@ -521,7 +521,10 @@ end
 --
 -- This function is used by the scheduler's top-level loop, but shouldn't
 -- be called explicitly by users.
-------------------------------------------------------------------------------
+--
+-- @function [parent=#sched] step
+-- 
+
 function sched.step()
     local ptr = __tasks.ready
 
@@ -530,13 +533,14 @@ function sched.step()
 
     --------------------------------------------------------------------
     -- If there are no task currently running, resume scheduling by
-    -- going through [__tasks.ready] until it's empty.
+    -- going through `__tasks.ready` until it's empty.
     --------------------------------------------------------------------
     while true do
         local cell = table.remove (ptr, 1)
         if not cell then break end
         local thread = cell[1]
         __tasks.running = thread
+        log.trace ('sched', 'DEBUG', "STEP %s", tostring (thread))
         local success, msg = coroutine.resume (unpack (cell))
         if not success and msg ~= KILL_TOKEN then
             -- report the error msg
@@ -561,7 +565,7 @@ function sched.step()
     if CLEANUP_REQUIRED then sched.gc(); CLEANUP_REQUIRED = false end
 end
 
-------------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------
 -- Runs a cell:
 --
 -- * if it has been emptied, leave it alone;
@@ -571,7 +575,7 @@ end
 --   a `new_queue list`, insert it there.
 --
 -- If `wokenup_tasks` isn't provided, insert tasks in `__tasks.ready` instead.
-------------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------
 local function runcell(c, emitter, event, args, wokenup_tasks, new_queue)
     local nargs  = args.n
 
@@ -631,12 +635,13 @@ end
 -- * immediately running the hooks listening to this signal;
 -- * reattaching the hook cells which don't have a `once` field.
 --
+-- @function [parent=#sched] signal
 -- @param emitter arbitrary Lua object which sends the signal.
 -- @param event a string representing the event's kind.
 -- @param ... extra args passed to the woken up tasks and triggered hooks.
 -- @return nothing.
 --
-------------------------------------------------------------------------------
+
 function sched.signal (emitter, event, ...)
     log.trace ('sched', 'DEBUG', "SIGNAL %s.%s", tostring(emitter), event)
     local args  = table.pack(event, ...) -- args passed to hooks & rescheduled tasks
@@ -645,11 +650,11 @@ function sched.signal (emitter, event, ...)
     local ptrdy = __tasks.ready
 
     --------------------------------------------------------------------
-    -- [emq]: the row of waiting tasks associated with [emitter]
-    -- [queues]: the event queues to parse: the one associated with the
-    --           event, and the wildcard queue ['*']
-    -- [wokenup_tasks]: tasks to reschedule because they were waiting
-    --                  for this signal
+    -- `emq`: event->tasks_lists table of cells watching events from `emitter`
+    -- `queues`: the event queues to parse: the one associated with `event`,
+    --           and the wildcard queue `'*'`
+    -- `wokenup_tasks`: tasks to reschedule because they were waiting
+    --                  for this signal.
     --------------------------------------------------------------------
     local emq = ptw [emitter]; if not emq then return end
     local wokenup_tasks = { }
@@ -679,18 +684,17 @@ function sched.signal (emitter, event, ...)
         end
     end
 
-    local prev_hold = __tasks.hold; __tasks.hold = true
-
+   local was_already_processing = __tasks.signal_processing
+   __tasks.signal_processing = true
     parse_queue('*')
     parse_queue(event)
+    __tasks.signal_processing = was_already_processing
 
     --------------------------------------------------------------------
     -- 3 - Actually reschedule the tasks
     --------------------------------------------------------------------
     for _, t in ipairs (wokenup_tasks) do table.insert (ptrdy, t) end
 
-    __tasks.hold = prev_hold
-    if not prev_hold then sched.step() end
 end
 
 ------------------------------------------------------------------------------
@@ -722,6 +726,8 @@ local function register (cell, emitter, events)
     --------------------------------------------------------------------
     if events==nil and type(emitter)=='number' then
         emitter, events = nil, { emitter }
+    elseif emitter==nil then
+        error 'signal emitters cannot be nil'
     end
     if #events > 1 then cell.multi = true end
 
@@ -795,10 +801,11 @@ end
 --  Cf. description of @{__tasks.waiting} for a description of how tasks
 --  are put to wait on signals.
 --
+-- @function [parent=#sched] wait
 -- @param emitter table listing emitters to wait on. Can also be string to define
---        single emitter, or a number to specify a timeout (wait used as sleep function)
--- @param ... optional vararg: can be events list in a table, or several events in
---        several arguments. Last event can be a number to specify a timeout call.
+--  single emitter, or a number to specify a timeout (wait used as sleep function)
+-- @param varargs optional varargs: can be events list in a table, or several events in
+--  several arguments. Last event can be a number to specify a timeout call.
 -- @return the event and extra parameters of the signal which unlocked the task.
 --
 -- @usage
@@ -825,7 +832,7 @@ end
 --     -- admissible shorcut for `sched.wait(emitter, {event1, event2...}):
 --     sched.wait(emitter, event1, event2, ...)
 --
-------------------------------------------------------------------------------
+
 function sched.wait (emitter, ...)
     local current = __tasks.running or
         error ("Don't call wait() while not running!\n"..debug.traceback())
@@ -837,12 +844,12 @@ function sched.wait (emitter, ...)
         table.insert (__tasks.ready, { current })
     else
         local events
-        if nargs==0 then
+        if nargs==0 then -- only makes sense for wait(number)
             emitter, events = '*', {emitter}
         elseif nargs==1 then
             events = (...)
             if type(events)~='table' then events={events} end
-        else -- nargs>1, wait(emitter, ev1, ev2, ...)
+        else -- nargs>1, wait(emitter, ev1, ev2, ...); 
             events = {...}
         end
 
@@ -871,19 +878,20 @@ end
 
 ------------------------------------------------------------------------------
 -- Waits on several emitters.
--- Same as @{sched.wait}(), except that:
+-- Same as @{#sched.wait}, except that:
 --
 --  * the first argument is a list of emitters rather than a single emitter;
 --  * it returns `emitter, event, args...` instead of just `event, args...`;
 --    indeed, the caller might want to know which emitter rescheduled it;
 --  * it's illegal not to enclose events in a list.
 --
+-- @function [parent=#sched] multiWait
 -- @param emitters table containing a list of the emitters to wait on
 -- @param events table containing a list of the events to wait on, or a string
---        describing an event's kind, or a number defining timeout for this call.
+--  describing an event's kind, or a number defining timeout for this call.
 -- @return emitter, event, args that caused this call to end.
 --
-------------------------------------------------------------------------------
+
 function sched.multiWait (emitters, events)
     checks('table', 'string|table|number')
     local current = __tasks.running or
@@ -919,14 +927,14 @@ end
 
 
 ------------------------------------------------------------------------------
---  Hooks a callback function to a set of signals.
+-- Hooks a callback function to a set of signals.
 --
--- Signals are described as for @{sched.wait}(). See this function for more
+-- Signals are described as for @{#sched.wait}. See this function for more
 -- details.
 --
 -- The callback is called synchronously as soon as the corresponding
 -- signal is emitted, and every time it is emittes. That is, the function 
--- `f` will have returned before the call to @{sched.signal}() which triggered
+-- `f` will have returned before the call to @{#sched.signal} which triggered
 -- it returns.
 --
 -- This puts a constraint on `f`: it must not block and try to reschedule itself.
@@ -935,17 +943,18 @@ end
 --  The hook will receive as arguments the triggering event, and any extra params
 --  passed along with the signal.
 --
+-- @function [parent=#sched] sigHook
 -- @param emitter list of signal emitters to watch or a string describing
---        single emitter to watch
+--  single emitter to watch
 -- @param events events to watch from the emitters: a table containing a list
---        of the events to wait on, a string discribing an event's kind,
---        or a number defining timeout for this call.
+--  of the events to wait on, a string discribing an event's kind,
+--  or a number defining timeout for this call.
 -- @param f function to be used as hook
--- @param ... extra optional params to be given to hook when called
--- @return registered hook, which can be passed to @{sched.kill}() to cancel
---         the registration.
+-- @param varargs extra optional params to be given to hook when called
+-- @return registered hook, which can be passed to @{#sched.kill} to cancel
+--  the registration.
 --
-------------------------------------------------------------------------------
+
 function sched.sigHook (emitter, events, f, ...)
     checks ('?', 'string|table|number', 'function')
     local xtrargs = table.pack(...); if not xtrargs[1] then xtrargs=nil end
@@ -958,20 +967,21 @@ end
 ------------------------------------------------------------------------------
 -- Hooks a callback function to a set of signals, to be triggered only once.
 --
--- This function has the same API and behavior as @{sched.sigHook}(),
+-- This function has the same API and behavior as @{#sched.sigHook},
 -- except that the hook will only be run once: it detaches itself from
 -- all of its registrations when it's first triggered.
 --
+-- @function [parent=#sched] sigOnce
 -- @param emitter a list of signal emitters to watch or a string describing
---        a single emitter to watch
+--  a single emitter to watch
 -- @param events events to watch from the emitters: a table containing a list
---        of the events to wait on, a string describing an event's kind,
---        or a number defining timeout for this call.
+--  of the events to wait on, a string describing an event's kind,
+--  or a number defining timeout for this call.
 -- @param f function to be used as hook
--- @param ... extra optional params to be given to hook when called
+-- @param varargs extra optional params to be given to hook when called
 -- @return registred hook
 --
-------------------------------------------------------------------------------
+
 function sched.sigOnce (emitter, events, f, ...)
     checks ('?', 'string|table|number', 'function')
     local xtrargs = table.pack(...); if not xtrargs[1] then xtrargs=nil end
@@ -1004,48 +1014,51 @@ local function sigrun(once, emitter, events, f, ...)
 end
 
 ------------------------------------------------------------------------------
---  Hooks a callback function to a set of signals.
+-- Hooks a callback function to a set of signals.
 --
--- This function has the same API as @{sched.sigHook}(), except that `f` runs
+-- This function has the same API as @{#sched.sigHook}, except that `f` runs
 -- in a separate thread. The consequences are:
 --
 -- * `f` is not run immediately, but after the task which called the triggering
 --   signal rescheduled;
 -- * `f` is allowed to call blocking APIs.
 --
+-- @function [parent=#sched] sigRun
 -- @param emitters a list of signal emitters to watch or a string describing
---        single emitter to watch
+--  single emitter to watch
 -- @param events events to watch from the emitters: a table containing a list
---        of the events to wait on, a string describing an event's kind,
---        or a number defining timeout for this call.
+--  of the events to wait on, a string describing an event's kind,
+--  or a number defining timeout for this call.
 -- @param f function to be used as hook
--- @param ... extra optional params to be given to hook when called
--- @return registered hook, which can be passed to @{sched.kill}() to cancel
---         the registration.
+-- @param varargs extra optional params to be given to hook when called
+-- @return registered hook, which can be passed to @{#sched.kill} to cancel
+--  the registration.
 --
-------------------------------------------------------------------------------
+
 function sched.sigRun(...)
     checks ('?', 'string|table|number', 'function')
     return sigrun(false, ...)
 end
 ------------------------------------------------------------------------------
---  Hooks a callback function to a set of signals. The hook will be called
+-- Hooks a callback function to a set of signals. The hook will be called
 -- in a new thread (allowing the hook to block), and only one time.
 --
--- This function has the same API and behavior as @{sched.sigRun}(),
+-- This function has the same API and behavior as @{#sched.sigRun},
 -- except that the hook will only be run once: it detaches itself from
 -- all of its registrations when it's first triggered.
 --
+-- @function [parent=#sched] sigRunOnce
 -- @param emitters a list of signal emitters to watch or a string describing
---        a single emitter to watch
+--  a single emitter to watch
 -- @param events events to watch from the emitters: a table containing a list
---        of the events to wait on, a string describing an event's kind,
---        or a number defining timeout for this call.
+--  of the events to wait on, a string describing an event's kind,
+--  or a number defining timeout for this call.
 -- @param f function to be used as hook
--- @param ... extra optional params to be given to hook when called
--- @return registered hook, which can be passed to @{sched.kill}() to cancel
---         the registration.
-------------------------------------------------------------------------------
+-- @param varargs extra optional params to be given to hook when called
+-- @return registered hook, which can be passed to @{#sched.kill} to cancel
+--  the registration.
+--
+
 function sched.sigRunOnce(...)
     checks ('?', 'string|table|number', 'function')
     return sigrun(true, ...)
@@ -1061,14 +1074,15 @@ end
 --
 -- There's usually no need to call this function explicitly, it will be triggered
 -- automatically when it's needed and the scheduler is about to go idle.
+-- @function [parent=#sched] gc
+-- @return memory available (in number of bytes) after gc.
 --
---  @return memory available (in number of bytes) after gc.
-------------------------------------------------------------------------------
+
 function sched.gc()
     -- Design note: no need to do that on the `__tasks.ready` list: it
     -- auto-cleans itself when `run`() goes through it.                   --
-    local costatus, cg = coroutine.status, collectgarbage
-    local not_pth, ptw = not __tasks.hold, __tasks.waiting
+    local costatus = coroutine.status
+    local not_processing, ptw = not __tasks.signal_processing, __tasks.waiting
 
     -- Getting rid of entries waiting for a dead thread / dead channel
     for emitter, events in pairs(ptw) do
@@ -1080,13 +1094,14 @@ function sched.gc()
                 or cell.thread and costatus(cell.thread)=="dead" -- dead thread
                 then table.remove(event_queue, i); len=len-1 else i=i+1 end
             end
-            if not_pth and not next(event_queue) then events[event] = nil end  -- event with empty queue
+            if not_processing and not next(event_queue) then events[event] = nil end  -- event with empty queue
         end
         -- remove emitter if there's no pending event left:
-        if not_pth and not next(events) then ptw[emitter] = nil end
+        if not_processing and not next(events) then ptw[emitter] = nil end
     end
 
-    cg 'collect'; return math.floor(cg 'count' * 1000)
+    collectgarbage 'collect'
+    return math.floor(collectgarbage 'count' * 1000)
 end
 
 ------------------------------------------------------------------------------
@@ -1095,14 +1110,15 @@ end
 -- Implementation principle: the task is killed by either
 --
 --  * making it send a `KILL_TOKEN` error if it is currently running
---  * waking it up from a @{sched.wait}() yielding with `KILL_TOKEN` as an argument,
---    which in turn makes @{sched.wait}() send a `KILL_TOKEN` error.
+--  * waking it up from a @{#sched.wait} yielding with `KILL_TOKEN` as an argument,
+--    which in turn makes @{#sched.wait} send a `KILL_TOKEN` error.
 --
--- @param x task to kill, as returned by @{sched.sigHook} for example.
+-- @function [parent=#sched] kill
+-- @param x task to kill, as returned by @{#sched.sigHook} for example.
 -- @return `nil` if it killed another task,
 -- @return never returns if it killed the calling task.
 --
-------------------------------------------------------------------------------
+
 function sched.kill (x)
     local tx = type(x)
     if tx=='table' then
@@ -1129,8 +1145,10 @@ end
 
 ------------------------------------------------------------------------------
 -- Kills the current task.
+-- @function [parent=#sched] killSelf
 -- @return never returns, since the task is killed.
-------------------------------------------------------------------------------
+--
+
 function sched.killSelf()
     error (KILL_TOKEN)
 end

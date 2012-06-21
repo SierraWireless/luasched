@@ -1,28 +1,37 @@
---- Code loading/unloading utils
+--- 
+-- Code loading/unloading utils.
 --
+-- This module provides additional utility functions to handle the lifecycle
+-- of Lua files.
 --
 --@module utils.loader
+-- 
 
 local table = table
 local load = load
 local type= type
 local _G = _G
+local checks = require"checks"
 
 local M={}
 --------------------------------------------------------------------------------
---- Compiles a buffer (ie a list of strings) into an executable function.
--- As opposed to [loadstring](http://www.lua.org/manual/5.1/manual.html#pdf-loadstring) 
--- it does not require allocating a single string for
--- the whole source, thereby saving on memory load. Moreover, if the
--- last argument is true, the buffer is emptied as it is read, thus saving even
--- more memory (but destroying the buffer).
+-- Compiles a buffer (ie a list of strings) into an executable function.
+--
+-- This function is quite similar to Lua's `loadstring()` core function, except
+-- that it takes a list of strings as a parameter rather than a single string.
+-- Since it never concatenates the string internally, using this function
+-- instead of `loadstring()` limit fragmentation issues when loading large files
+-- on a device with very limited RAM resources.
+--
+-- @function [parent=#utils.loader] loadBuffer
 -- @param buffer a list of strings.
 -- @param name is an optional chunk name used for debug traces.
 -- @param destroy is a boolean. When true, the buffer is read destructively (saves RAM when handling big sources).
 -- @return function resulting of the buffer compilation
--- @function loadBuffer
---------------------------------------------------------------------------------
+--
+
 function loadbuffer (buffer, name, destroy)
+    checks("table", "?string", "?")
     local remove = table.remove
     local function dest_reader() return remove (buffer, 1) end
     local i = 0
@@ -31,15 +40,23 @@ function loadbuffer (buffer, name, destroy)
 end
 
 --------------------------------------------------------------------------------
---- Unloads a module by removing references to it.
--- Here is the sequence of operations made by this function:
+-- Unloads a module by removing references to it.
 --
--- 1. Call package.loaded[name].__unload() if existing
--- 1. Clear: package.loaded[name]
--- 1. Clear: _G[name]
+-- When a module isn't used anymore, one can call this function with the module's
+-- name as a parameter. It will remove references to the module in `package`'s
+-- internal tables, thus allowing the module's resources to be reclaimed by the
+-- garbage collector if no deangling references remain in the application.
+-- 
+-- 1. Call function `package.loaded[name].__unload()` if it exists
+-- 2. Clear `package.loaded[name]`
+-- 3. Clear `_G[name]`
+--
+-- @function [parent=#utils.loader] unload
 -- @param name the name of the module to unload.
---------------------------------------------------------------------------------
+--
+
 function unload(name)
+    checks("string")
     local l = _G.package.loaded
     local p = l[name]
     local u = type(p) == 'table' and p.__unload

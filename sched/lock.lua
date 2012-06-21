@@ -77,9 +77,6 @@
 --          [code]
 --      end)
 --------------------------------------------------------------------------------
-
-require 'utils.table' -- needed for table.pack. To be removed when we switch to Lua5.2
-
 local sched = require 'sched'
 local checks = require 'checks'
 local setmetatable = setmetatable
@@ -93,6 +90,9 @@ local proc = proc -- sched internal table
 local pairs = pairs
 local type = type
 local unpack = unpack
+
+require 'utils.table' -- needed for table.pack. To be removed when we switch to Lua5.2
+
 
 module(...)
 

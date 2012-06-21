@@ -1,4 +1,5 @@
----Path utils.
+---
+-- Path utils.
 --
 -- **Definition of path** used by this file:
 --
@@ -14,7 +15,9 @@
 --   otherwise all elements or paths are returned as strings.<br />
 --   e.g.: `split('a.2', 1)` -> `('a', 2)`   (where 2 is returned as a number) <br /> 
 --   e.g.: `split('a.b.2e3.c', 1)` -> `('a', 'b.2000.c')`  
---@module utils.path
+-- 
+-- @module utils.path
+--
 
 local checks = require"checks"
 
@@ -50,34 +53,49 @@ end
 
 --------------------------------------------------------------------------------
 -- Concatenates a sequence of path strings together.
--- @param ... list of strings to concatenate into a valid path
+--
+-- @function [parent=#utils.path] concat
+-- @param varargs list of strings to concatenate into a valid path
 -- @return resulting path as a string
+--
+
 function concat(...)
     return pathconcat({...})
 end
 
 --------------------------------------------------------------------------------
---- Cleans a path.
+-- Cleans a path.
+-- 
 -- Removes trailing/preceding/doubling '.'.
+-- 
+-- @function [parent=#utils.path] clean
 -- @param path string containing the path to clean.
 -- @return cleaned path as a string.
---------------------------------------------------------------------------------
+--
+
 function clean(path)
+    checks('string')
     local p = segments(path)
     return pathconcat(p)
 end
 
 --------------------------------------------------------------------------------
---- Sets a value in a tree-like table structure.
+-- Sets a value in a tree-like table structure.
+--
 -- The value to set is indicated by the path relative to the table.
 -- This function creates the table structure to store the value, unless the value to set is nil.
 -- If the value to set is nil and the table structure already exists then the value is set to nil.
 -- If the value is not nil, then the table structure is always created/overwritten and the value set.
+--
+-- @function [parent=#utils.path] set
 -- @param t table where to set the value.
--- @param path can be either a string (see @{split}) or an array where path[1] is the root and path[n] is the leaf.
+-- @param path can be either a string (see @{#(utils.path).split}) 
+--  or an array where path[1] is the root and path[n] is the leaf.
 -- @param value the value to set.
---------------------------------------------------------------------------------
+--
+
 function set(t, path, value)
+    checks('table', 'string|table', '?')
     local p = type(path)=='string' and segments(path) or path
     local k = table.remove(p)
     local t = find(t, p, value~=nil) -- only create the table structure if the value to set is non nil!
@@ -86,14 +104,18 @@ function set(t, path, value)
 end
 
 --------------------------------------------------------------------------------
---- Gets the value of a table field. The field can be in a sub table.
+-- Gets the value of a table field. The field can be in a sub table.
+--
 -- The field to get is indicated by a path relative to the table.
+--
+-- @function [parent=#utils.path] get
 -- @param t table where to set the value.
 -- @param path can be eiher a string (see @{split}) or an array where path[1] is the root and path[n] is the leaf.
 -- @return value if the field is found.
 -- @return nil otherthise.
---------------------------------------------------------------------------------
+--
 function get(t, path)
+    checks('table', 'string|table')
     local p = type(path)=='string' and segments(path) or path
     local k = table.remove(p)
     if not k then return t end
@@ -103,11 +125,16 @@ end
 
 
 --------------------------------------------------------------------------------
---- Enumerates path partitions in a for-loop generator, starting from the right.
+-- Enumerates path partitions in a for-loop generator, starting from the right.
+-- 
 -- For instance, `gsplit "a.b.c"` will generate successively
 -- `("a.b.c", ""), ("a.b", "c"), ("a", "b.c"), ("", "a.b.c")`.
+--
+-- @function [parent=#utils.path] gsplit
 -- @param path the path as a string
 -- @return the for-loop iterator function
+--
+
 function gsplit (path)
     checks ('string')
     local segs  = segments(path)
@@ -137,12 +164,14 @@ end
 -- Note that if a half is a single element and that this element can be converted into a number, 
 -- it is returned as a number.
 --
--- @usage local root, tail = split('a.b.c', 1)
--- ->root contains 'a', tail contains 'b.c'
---
+-- @function [parent=#utils.path] split
 -- @param path the path as a string
 -- @param n number defining how the path is splitted (see above description).
 -- @return the two halves
+-- @usage local root, tail = split('a.b.c', 1)
+-- ->root contains 'a', tail contains 'b.c'
+--
+
 function split(path, n)
     checks('string', 'number')
     local segments = segments(path)
@@ -159,10 +188,13 @@ end
 --
 -- Each segment is delimited by '.' pattern.
 --
+-- @function [parent=#utils.path] segments
 -- @param path string containing the path to split.
 -- @return list of split path elements.
 --
+
 function segments(path)
+    checks('string')
     local t = {}    
     local index, newindex, elt = 1
     repeat
@@ -175,11 +207,10 @@ function segments(path)
     return t
 end
 
-
+--------------------------------------------------------------------------------
 -- Retrieves the element in a sub-table corresponding to the path.
--- @usage config = {toto={titi={tutu = 5}}}
---     find(config, "toto.titi") -- will return the table titi
 --
+-- @function [parent=#utils.path] find
 -- @param t is the table to look into.
 -- @param path can be either a string (see @{segments}) or an array where
 -- `path[1]` is the root and `path[n]` is the leaf.
@@ -198,7 +229,11 @@ end
 --   table if possible, and nil followed by the path that points to the first
 --   neither-table-nor-nil value otherwise.
 --
+-- @usage config = {toto={titi={tutu = 5}}}
+--     find(config, "toto.titi") -- will return the table titi
+--
 function find(t, path, force)
+    checks('table', 'string|table', '?')
     path = type(path)=="string" and segments(path) or path
     for i, n in ipairs(path) do
         local v  = t[n]

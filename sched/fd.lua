@@ -161,7 +161,7 @@ end
 ------------------------------------------------------------------------------
 local socket_select
 function sched.fd.step(timeout)
-  if not socket_select then require 'socket'; socket_select = socket.select; end -- executed once at first call only !
+  if not socket_select then local psignal = require 'sched.posixsignal'; socket_select = psignal.select; end -- executed once at first call only !
 
   local can_read, can_write, msg = socket_select(fdt.wait_read, fdt.wait_write, timeout)
 

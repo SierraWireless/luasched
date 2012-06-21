@@ -1,15 +1,15 @@
 ------------------------------------------------------------------------------
---- Log library provides logging facilities.
+-- Log library provides logging facilities.
 -- The module exposes extension points. It is possible to provide both the custom printing function and the custom log saving function. <br />
 -- The module is callable. Thus:
 --    local log = require"log"
 --    log("MODULE", "INFO", "message")
--- calls the @{trace} function.
+-- calls the @{#log.trace} function.
 -- @module log
-------------------------------------------------------------------------------
+--
 
 require 'utils.table' -- needed for table.pack. To be removed when we switch to Lua5.2
-
+local checks = require 'checks'
 local pcall = pcall
 local string = string
 local table = table
@@ -25,81 +25,95 @@ local next = next
 module(...)
 
 -------------------------------------------------------------------------------
--- Severity name <-> Severity numeric value translation table. <br />
--- Built-in values (in order from the least verbose to the most):
+-- Log levels are strings used to filter logs.
+-- Levels are to be used both in log filtering configuration (see @{#log.setlevel}) and each time 
+-- @{#log.trace} function is used to issue a new log.
 --
--- - 'NONE'
--- - 'ERROR'
--- - 'WARNING'
--- - 'INFO'
--- - 'DETAIL'
--- - 'DEBUG'
--- - 'ALL'
+-- Levels are ordered by verbosity/severity level.
+-- 
+-- While configuring log filtering, if you set a module log level to 'INFO' level for exemple, you
+-- enable all logs *up to* 'INFO', that is to say that logs with 'WARNING' and 'ERROR' severities will
+-- be displayed too.
 --
--------------------------------------------------------------------------------
+-- Built-in values (in order from the least verbose to the most): 
+--    - 'NONE':    filtering only: when no log is wanted
+--    - 'ERROR':   filtering or tracing level
+--    - 'WARNING': filtering or tracing level
+--    - 'INFO':    filtering or tracing level
+--    - 'DETAIL':  filtering or tracing level
+--    - 'DEBUG':   filtering or tracing level
+--    - 'ALL':     filtering only: when all logs are to be displayed
+-- @type levels 
+--
 levels = {}
+-- Severity name <-> Severity numeric value translation table (internal purpose only)
 for k,v in pairs{ 'NONE', 'ERROR', 'WARNING', 'INFO', 'DETAIL', 'DEBUG', 'ALL' } do
     levels[k], levels[v] = v, k
 end
 
--------------------------------------------------------------------------------
--- Default verbosity level. <br />
--- Default value is 'WARNING'.
--- See @{levels} to see existing levels.
--------------------------------------------------------------------------------
-defaultlevel = defaultlevel or levels.WARNING
---- Per module verbosity levels.
--- See @{levels} to see existing levels.
--- @table modules
-modules = modules or { }
+-- -----------------------------------------------------------------------------
+-- Default verbosity level.  
+-- Default value is `"WARNING"`.
+-- @field [parent=#log] #levels defaultlevel
+-- See @{#log} for a list of existing levels.
+
+local defaultlevel = defaultlevel or levels.WARNING
+
+-- -----------------------------------------------------------------------------
+-- Per module verbosity levels.
+-- @field [parent=#log] modules
+-- See @{#levels} to see existing levels.
+
+local modules = modules or { }
 
 
--------------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------
 -- The string format of the timestamp is the same as what os.date takes.
 -- Example: "%F %T"
--------------------------------------------------------------------------------
+-- #field [parent=#log] #string timestampformat
 timestampformat = nil
 
--------------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------
 -- logger functions, will be called if non nil
 -- the loggers are called with following params (module, severity, logvalue)
--------------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
 -- Default logger for instant display.
--- This logger can be replaced by a custom function. <br />
+-- This logger can be replaced by a custom function.   
 -- It is called only if the log needs to be traced.
--- @param module string identifying the module that issues the log
--- @param severity string representing the log level.
+--
+-- @function [parent=#log] displaylogger
+-- @param #string module string identifying the module that issues the log
+-- @param severity string representing the log level, see @{log#levels}.
 -- @param msg string containing the message to log.
--- @function displaylogger
--------------------------------------------------------------------------------
+--
 displaylogger = displaylogger or function(_, _, ...)
     if base.print then base.print(...) end
 end
 
 -------------------------------------------------------------------------------
--- Logger function for log storage. <br />
--- This logger can be replaced by a custom function. <br />
--- There is no default logger. <br />
--- It is called only if the log needs to be traced (see @{musttrace}) and after the log has been displayed using {displaylogger}.
+-- Logger function for log storage.   
+-- This logger can be replaced by a custom function.   
+-- There is no default store logger.   
+-- It is called only if the log needs to be traced (see @{#log.musttrace}) and after the log has been displayed using {displaylogger}.
+--
+-- @function [parent=#log] storelogger
 -- @param module string identifying the module thats issues the log
--- @param severity string representing the log level.
+-- @param severity string representing the log level, see @{log#levels}.
 -- @param msg string containing the message to log.
--- @function storelogger
--------------------------------------------------------------------------------
+--
 storelogger = nil
 
 -------------------------------------------------------------------------------
--- Format is a string used to apply specific formating before the log is outputted. <br />
+-- Format is a string used to apply specific formating before the log is outputted.  
 -- Within a format, the following tokens are available (in addition to standard text)
---
--- - %l => the actual log (given in 3rd argument when calling log() function)
--- - %t => the current date
--- - %m => module name
--- - %s => log level (severity)
---
--------------------------------------------------------------------------------
+-- 
+--- %l => the actual log (given in 3rd argument when calling log() function)
+--- %t => the current date
+--- %m => module name
+--- %s => log level (severity), see @{log#levels}
+--@field [parent=#log] #string format
 format = nil
 
 local function loggers(...)
@@ -108,14 +122,24 @@ local function loggers(...)
 end
 
 -------------------------------------------------------------------------------
--- Determines whether a log must be traced depending on its severity and the module.
--- issuing the log.
--- @param module string identifying the module that issues the log.
--- @param severity string representing the log level.
+-- Determines whether a log must be traced depending on its severity and the
+-- module issuing the log. This function is mostly useful to protect `log()`
+-- calls which involve costly computations
+--
+-- @usage
+--
+--    if log.musttrace('SAMPLE', 'DEBUG') then
+--        log('SAMPLE', 'DEBUG', "Here are some hard-to-compute info: %s",
+--            computeAndReturnExpensiveDebugString())
+--    end
+--
+-- @function [parent=#log] musttrace
+-- @param modulename string identifying the module that issues the log.
+-- @param severity string representing the log level, see @{log#levels}.
 -- @return `nil' if the message of the given severity by the given module should
 -- not be printed.
--- @return true if the message should be printed.
--------------------------------------------------------------------------------
+-- @return `true` if the message should be printed.
+--
 function musttrace(module, severity)
     -- get the log level for this module, or default log level
     local lev, sev = modules[module] or defaultlevel, levels[severity]
@@ -124,21 +148,22 @@ end
 
 
 -------------------------------------------------------------------------------
--- Prints out a log entry according to the module and the severity of the log entry. <br />
--- This function uses @{format} and @{timestampformat} to create the final message string. <br />
--- It calls @{displaylogger} and @{storelogger}.
--- @param module string identifying the module that issues the log.
--- @param severity string representing the log level.
+-- Prints out a log entry according to the module and the severity of the log entry.
+--
+-- This function uses @{#log.format} and @{#log.timestampformat} to create the
+-- final message string. It calls @{#log.displaylogger} and @{#log.storelogger}.
+--
+-- @function [parent=#log] trace 
+-- @param modulename string identifying the module that issues the log.
+-- @param severity string representing the level in @{log#levels}.
 -- @param fmt string format that holds the log text the same way as string.format does.
--- @param ... additional arguments can be provided (as with string.format).
+-- @param varargs additional arguments can be provided (as with string.format).
 -- @usage trace("MODULE", "INFO", "message=%s", "sometext").
--------------------------------------------------------------------------------
+--
 function trace(module, severity, fmt, ...)
-    module = tostring (module)
-    severity = tostring (severity)
+    checks('string', 'string', 'string')   
     if not musttrace(module, severity) then return end
-    fmt = tostring (fmt)
-
+    
     local c, s = pcall(string.format, fmt, ...)
     if c then
         local t
@@ -165,10 +190,11 @@ end
 -------------------------------------------------------------------------------
 -- Sets the log level for a list of module names.
 -- If no module name is given, the default log level is affected
--- @param slevel level as in @{levels}
--- @param ... Optional list of modules names (string) to apply the level to.
+-- @function [parent=#log] setlevel
+-- @param slevel level as in @{log#levels}
+-- @param varargs Optional list of modules names (string) to apply the level to.
 -- @return nothing.
--------------------------------------------------------------------------------
+--
 function setlevel(slevel, ...)
     local mods = {...}
     local nlevel = levels[slevel] or levels['ALL']
@@ -179,8 +205,8 @@ function setlevel(slevel, ...)
     else defaultlevel = nlevel end
 end
 
--------------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------
 -- Make the module callable, so the user can call log(x) instead of log.trace(x)
--------------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------
 setmetatable(_M, {__call = function(_, ...) return trace(...) end })
 

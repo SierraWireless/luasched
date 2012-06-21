@@ -3,6 +3,7 @@
 #include "stdlib.h"
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "log_store.h"
 #include "log_storeflash.h"
@@ -81,35 +82,100 @@ int l_logflashinit(lua_State *L)
     lua_pushstring(L, "logflashinit: init already done");
     return 1;
   }
-  size_t len_flash_path = 0;
 
   if (lua_type(L, 1) != LUA_TTABLE){
-        LUA_RETURN_ERROR("logflashinit: Provided parameter is not correct: need table param with 'size' and 'path' fields");
+    LUA_RETURN_ERROR("logflashinit: Provided parameter is not correct: need table param with 'size' and 'path' fields");
   }
 
   LUA_CHECK_FIELD_TYPE(1, "size", LUA_TNUMBER, "logflashinit");
   file_size_limit = luaL_checkinteger(L, -1);
   LUA_CHECK_FIELD_TYPE(1, "path", LUA_TSTRING, "logflashinit");
+  size_t len_flash_path = 0;
   const char* flash_path = luaL_checklstring(L, -1, &len_flash_path);
 
-  if (flash_path[len_flash_path - 1] == '/')
+  char* log_path = NULL;
+  char* mkdir_cmd = NULL;
+  lua_getglobal(L, "WORKING_DIR");
+  if (lua_isstring(L, -1))
   {
-    len_flash_path--;
+    const char* working_dir = lua_tostring(L, -1);
+    log_path = malloc(strlen(working_dir) + len_flash_path + 1);
+    if (log_path != NULL)
+      sprintf(log_path, "%s%s", working_dir, flash_path);
+  }
+  else
+  {
+    log_path = malloc(2 + len_flash_path + 1);
+    if (log_path != NULL)
+      sprintf(log_path, "./%s", flash_path);
+  }
+  if (log_path == NULL)
+  {
+      LUA_RETURN_ERROR("logflashinit: Allocation failure");
+  }
+  len_flash_path = strlen(log_path);
+  int mkdir_status = -1;
+  mkdir_cmd = malloc(9 + len_flash_path + 1);
+  if (mkdir_cmd != NULL)
+  {
+    sprintf(mkdir_cmd, "mkdir -p %s", log_path);
+    mkdir_status = system((const char*)mkdir_cmd);
+  }
+  else
+  {
+      LUA_RETURN_ERROR("logflashinit: Allocation failure");
+  }
+  if ((mkdir_status != 0) || access(log_path, W_OK))
+  {
+    if (log_path != NULL)
+    {
+      free(log_path);
+      log_path = NULL;
+    }
+    if (mkdir_cmd != NULL)
+    {
+      free(mkdir_cmd);
+      mkdir_cmd = NULL;
+    }
+    LUA_RETURN_ERROR("logflashinit: Provided path is not correct: cannot create");
   }
 
-  if (access(flash_path, W_OK))
-    LUA_RETURN_ERROR("logflashinit: Provided path is not correct: doesn't exist or is not writable");
+  if (log_path[len_flash_path - 1] == '/')
+    len_flash_path--;
 
   buf_file_names = malloc(2 * (len_flash_path + 25));
   if (NULL == buf_file_names)
-    LUA_RETURN_ERROR("Malloc error at init!");
+  {
+      if (log_path != NULL)
+      {
+        free(log_path);
+        log_path = NULL;
+      }
+      if (mkdir_cmd != NULL)
+      {
+        free(mkdir_cmd);
+        mkdir_cmd = NULL;
+      }
+      LUA_RETURN_ERROR("Malloc error at init!");
+  }
 
   filename1 = buf_file_names;
   filename2 = buf_file_names + len_flash_path + 25;
   snprintf(filename1, len_flash_path + 25, "%.*s/%s1.log",
-      (int) len_flash_path, flash_path, FLASH_FILE_NAME_BASE);
+      (int) len_flash_path, log_path, FLASH_FILE_NAME_BASE);
   snprintf(filename2, len_flash_path + 25, "%.*s/%s2.log",
-      (int) len_flash_path, flash_path, FLASH_FILE_NAME_BASE);
+      (int) len_flash_path, log_path, FLASH_FILE_NAME_BASE);
+
+  if (log_path != NULL)
+  {
+    free(log_path);
+    log_path = NULL;
+  }
+  if (mkdir_cmd != NULL)
+  {
+    free(mkdir_cmd);
+    mkdir_cmd = NULL;
+  }
 
   //create empty files if not existing yet
   File1 = fopen(filename2, "a");

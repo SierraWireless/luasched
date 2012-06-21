@@ -7,10 +7,7 @@
 -----------------------------------------------------------------------------
 -- Declare module and import dependencies
 -----------------------------------------------------------------------------
-local require = require
 local base = _G
-require 'coxpcall'
-local copcall = copcall
 local string = require("string")
 local math = require("math")
 local socket = require("socket.core")
@@ -44,7 +41,7 @@ function bind(host, port, backlog_or_hook, hook)
     return sock
 end
 
---try = newtry() -- redefined below
+try = newtry()
 
 function choose(table)
     return function(name, opt1, opt2)
@@ -135,34 +132,7 @@ end
 sourcet["default"] = sourcet["until-closed"]
 source = choose(sourcet)
 
---------------------------------------------------------------------------------
--- Redefine LuaSocket protection functions with coroutine-safe versions.
---------------------------------------------------------------------------------
-
-local function statusHandler(status, ...)
-    if status then return ... end
-    return nil, ...
-end
-function protect(func)
-    return function (...)
-        return statusHandler(copcall(func, ...))
-    end
-end
-
-function newtry(finalizer)
-    local select =  base.select
-    local error = base.error
-    return function (...)
-        local status = (...) or false
-        if (status==false) then
-            if finalizer then copcall(finalizer, select(2, ...) ) end
-            error((select(2, ...)), 0)
-        end
-        return ...
-    end
-end
-
-try = base.assert
 
 -- Platform-specific settings
-require 'socket.platform'
+if global then global('sched') end
+if base.sched then base.require 'socket.platform' end

@@ -75,6 +75,12 @@ headers.
   control over verbosity, as well as selective redirection of logs
   toward different back-ends.
 
+- 'rpc': allows different Lua VMs to control each other, and to spawn new
+  slave VMs, with or without a scheduler in them. It allows to use several
+  CPUs simultaneously, and to segregate modules which don't play fair with
+  the collaborative scheduler in their own process. VMs don't have to be
+  on the same computer, they communicate over TCP.
+
 Quick overview
 ==============
 

@@ -33,10 +33,8 @@ contributions from Ignacio Castaño (<castanyo@yahoo.es>) and Roberto Ierusalims
 Original library can be found [here](http://www.tecgraf.puc-rio.br/~lhf/ftp/lua/).
 
 @module pack
- */
 
-/***
- * @usage require"pack"
+@usage require"pack"
 local bindata = string.pack("zf", "foo", 4.2)
 local mystring,myfloat = string.unpack(bindata, "zf")
  */
@@ -193,23 +191,24 @@ static void doswap(int swap, void *p, size_t n)
 
 
 /***
-Unpacks a binary string into values.
+ Unpacks a binary string into values.
 
-The letters codes are the same as for pack, except that numbers following 'A'
-are interpreted as the number of characters to read into the string and not as
-repetitions.<br />
-The first value returned by unpack is the next unread position in s, which can
-be used as the init position in a subsequent call to unpack.
-This allows you to unpack values in a loop or in several steps.
+ The letters codes are the same as for pack, except that numbers following 'A'
+ are interpreted as the number of characters to read into the string and not as
+ repetitions.  
+ The first value returned by unpack is the next unread position in s, which can
+ be used as the init position in a subsequent call to unpack.  
+ This allows you to unpack values in a loop or in several steps.
 
-@param s is a (binary) string containing data packed as if by pack
-@param F is a format string describing what is to be read from s
-@param init optional init marks where in s to begin reading the values
-@return the next unread position in s, followed by one value per letter in F until F or s is exhausted.
-@return nil if either s has been exhausted or init is bigger than the length of the s
-@function unpack
-@usage require"pack"
-local _,mystring,myfloat = string.unpack(bindata, "zf")
+ @function [parent=#pack] unpack
+ @param s is a (binary) string containing data packed as if by pack
+ @param F is a format string describing what is to be read from s
+ @param init optional init marks where in s to begin reading the values
+ @return the next unread position in s, followed by one value per letter in F until F or s is exhausted.
+ @return nil if either s has been exhausted or init is bigger than the length of the s
+ @usage
+  require"pack"
+  local _,mystring,myfloat = string.unpack(bindata, "zf")
 */
 static int l_unpack(lua_State *L) 		/** unpack(s,f,[init]) */
 {
@@ -337,11 +336,12 @@ done:
 
  The letter codes understood by pack are listed above in module description.
  Numbers following letter codes indicate repetitions.
+
+ @function [parent=#pack] pack
  @param F a string describing how the values x1, x2, ... are to be interpreted and formatted.
- Each letter in the format string F consumes one of the given values.
+  Each letter in the format string F consumes one of the given values.
  @param x1, x2, ... : variable number of values. Only values of type number or string are accepted.
  @return a (binary) string containing the values packed as described in F.
- @function pack
  @usage require"pack"
 local bindata = string.pack("zf", "foo", 4.2)
  */

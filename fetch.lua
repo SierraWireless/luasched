@@ -1,9 +1,8 @@
 -- Fetching script: copy all files necessary for the MIT Linux release
 -- of the scheduler.
 
-
 -- The `root` variable points to the Lua framework's root directory.
-root = "../luafwk"
+root = ... or "../luafwk"
 
 -- List of file copies to perform:
 --
@@ -19,6 +18,7 @@ script = [[
 
 -/common/misc/coxpcall.lua
 -/common/misc/print.lua
+-/common/misc/strict.lua
 -/common/luasocket/common/ltn12.lua
 -/common/luasocket/common/mime.lua
 -/common/luasocket/common/socket.lua
@@ -35,11 +35,21 @@ script = [[
 
 -/common/checks/checks.c
 -/common/checks/checks.h
+
 -/common/lpack/lpack.c
 -/common/lpack/lpack.h
+
 -/linux/liblua/mem_define.h
+
 -/common/luasocket/common/mime/mime.c
 -/common/luasocket/common/mime/mime.h
+
+-/common/sched/linux/sched/posixsignal/lposixsignal.h
+-/common/sched/linux/sched/posixsignal/lposixsignal.c
+
+-/common/luatobin/luatobin.c
+-/../libs/c/common/awt_endian.c
+-/../libs/c/common/awt_endian.h
 
 >log
 
@@ -62,6 +72,15 @@ script = [[
 -/common/sched/linux/sched/platform.lua
 -/common/misc/pipe.lua
 -/common/misc/lock.lua
+
+>rpc
+
+-/common/rpc/init.lua
+-/common/rpc/common.lua
+-/common/rpc/sched.lua
+-/common/rpc/nosched.lua
+-/common/rpc/proxy.lua
+-/common/rpc/builtinsignatures.lua
 
 >shell
 
@@ -126,6 +145,10 @@ script = [[
 -/common/shell/common/telnet/teel.c
 -/common/shell/common/telnet/telnet.c
 
+>doc
+-/../doc/ldoc/ldoc.css
+-/../doc/ldoc/ldoc.ltp
+
 ]]
 
 -- Interpret the script string:
@@ -141,13 +164,15 @@ function process_script(script)
             target = arg
             cmd = "mkdir -p "..target
         elseif op=="-" then
+            local src, tgt = root..arg, target .. "/" .. arg :match "[^/]+$"
+            --cmd = "if [ "..src.." -nt "..tgt.." ]; then echo 'update "..tgt.."'; cp "..src.." "..tgt.."; fi"
             cmd = "cp "..root..arg.." "..target.."/"
         elseif op=="#" then
             -- pass the comment
         else 
             error "Invalid script"
         end
-        print (cmd)
+        --print (cmd)
         assert(0==os.execute(cmd))
     end
 end

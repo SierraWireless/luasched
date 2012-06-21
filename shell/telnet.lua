@@ -1,3 +1,4 @@
+local sched = require 'sched'
 require "print"
 require "coxpcall"
 local _G = _G
@@ -13,7 +14,6 @@ local next = next
 local pairs = pairs
 local print = print
 local proc = proc
-local sched = require 'sched'
 local select = select
 local setmetatable = setmetatable
 local siprint = siprint

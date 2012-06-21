@@ -1,7 +1,8 @@
----Table utils.
+---
+-- Table utils.
 --
---
---@module utils.table
+-- @module utils.table
+-- 
 
 
 local coroutine = require"coroutine"
@@ -16,18 +17,21 @@ local pack, copy, diff, isarray, keys, map, sortedpairs, recursivepairs, multipa
 assert(not table.pack, "This was temporary, waiting for Lua5.2. Remove table.pack from utils module!")
 
 --------------------------------------------------------------------------------
---- Packs a variable number of arguments into a table.
---  This is a temporary function until we switch to Lua 5.2.
+-- Packs a variable number of arguments into a table.
+-- This is a temporary function until we switch to Lua 5.2.
 --
---  Returns a new table with all parameters stored into keys 1, 2, etc. and with a field "n" with
---  the total number of parameters. Also returns, as a second result, the total number of parameters.
+-- Returns a new table with all parameters stored into keys 1, 2, etc. and with a field "n" with
+-- the total number of parameters. Also returns, as a second result, the total number of parameters.
 --
---  Note that the resulting table may not be a sequence.
+-- Note that the resulting table may not be a sequence.
 --
---  Note that when loading utils.table module, this pack function is also added to global/std table module.
--- @param ... arguments to pack
+-- Note that when loading utils.table module, this pack function is also added to global/std table module.
+-- 
+-- @function [parent=#utils.table] pack
+-- @param varargs arguments to pack
 -- @return a table that contains all the arguments followed by the number of arguments.
---------------------------------------------------------------------------------
+--
+
 function pack(...)
     local n = select("#", ...)
     local t = {...}
@@ -37,13 +41,17 @@ end
 table.pack = pack --until we switch to 5.2.
 
 --------------------------------------------------------------------------------
---- Copies a table from the source to destination table.
+-- Copies a table from the source to destination table.
+--
 -- The copy is recursive.
+--
+-- @function [parent=#utils.table] copy
 -- @param src a table to be used as the source of the copy.
 -- @param dst a table to be used as the destination of the copy.
 -- @param overwrite boolean value, to enable overwrite of existing field in dst table.
 -- @return the resulting dst table. 
---------------------------------------------------------------------------------
+--
+
 function copy(src, dst, overwrite)
     dst = dst or {}
     for k, v in pairs(src) do
@@ -61,8 +69,11 @@ function copy(src, dst, overwrite)
 end
 
 --------------------------------------------------------------------------------
---- Produces a diff of two tables.
+-- Produces a diff of two tables.
+--
 -- Recursive diff by default.
+-- 
+-- @function [parent=#utils.table] diff
 -- @param t1 first table to compare.
 -- @param t2 second table to compare.
 -- @param norecurse boolean value to disable recursive diff.
@@ -86,7 +97,8 @@ end
 --= {
 --   "a",
 --   "d" }
------------------------------
+--
+
 function diff(t1, t2, norecurse)
     local d = {}
     local t3 = {}
@@ -104,12 +116,15 @@ function diff(t1, t2, norecurse)
 end
 
 --------------------------------------------------------------------------------
---- Checks if the table is regular array.
+-- Checks if the table is regular array.
+-- 
 -- Regular array is a table with only conscutive integer keys (no holes).
+-- 
+-- @function [parent=#utils.table] isArray
 -- @param T table to check.
 -- @return true or false.
--- @function isArray
---------------------------------------------------------------------------------
+--
+
 function isarray(T)
     local n = 1
     for k, v in pairs(T) do
@@ -120,10 +135,13 @@ function isarray(T)
 end
 
 --------------------------------------------------------------------------------
---- Extracts the keys of a table into a list.
+-- Extracts the keys of a table into a list.
+--
+-- @function [parent=#utils.table] keys
 -- @param T the table to extract keys from.
 -- @return a list of keys of T table.
---------------------------------------------------------------------------------
+--
+
 function keys(T)
     local list = {}
     for k in pairs(T) do table.insert(list, k) end
@@ -139,6 +157,8 @@ end
 -- If inplace is set to true, then the table is modified in place.
 --
 -- The function is called with key and value as a parameter.
+--
+-- @function [parent=#utils.table] map
 -- @param T the table to apply map on.
 -- @param func the function to call for each value of the map.
 -- @param recursive if non false, the map is executed recusively.
@@ -150,7 +170,8 @@ end
 -- -> will print:
 -- foo:    key1        val1
 -- foo:    key2        val2
---------------------------------------------------------------------------------
+--
+
 function map(T, func, recursive, inplace)
     local newtbl = inplace and T or {}
     for k,v in pairs(T) do
@@ -165,11 +186,13 @@ end
 -- @section It
 
 --------------------------------------------------------------------------------
---- Iterator that iterates on the table in key ascending order.
+-- Iterator that iterates on the table in key ascending order.
+--
+-- @function [parent=#utils.table] sortedPairs
 -- @param t table to iterate.
 -- @return iterator function.
--- @function sortedPairs
---------------------------------------------------------------------------------
+--
+
 function sortedpairs(t)
     local a = {}
     local insert = table.insert
@@ -183,16 +206,19 @@ function sortedpairs(t)
 end
 
 --------------------------------------------------------------------------------
---- Iterator that returns key/value pairs except walking through sub tables and concatenating the path in the key.
+-- Iterator that returns key/value pairs except walking through sub tables and concatenating the path in the key.
+--
 -- This iterator break cycles: it does not recur. If it detects a cycle, the entry causing a cycle is ignored.
 -- However, if a table is repeated, its contents will be repeated by this function.
--- @usage {toto={titi=1, tutu=2}, tata = 3, tonton={4, 5}} will iterate through
--- ("toto.titi",1), ("toto.tutu",2), ("tata",3) ("tonton.1", 4), ("tonton.2"=5)
+--
+-- @function [parent=#utils.table] recursivePairs
 -- @param t table to iterate.
 -- @param prefix path prefix to prepend to the key path returned.
 -- @return iterator function.
--- @function recursivePairs
---------------------------------------------------------------------------------
+-- @usage {toto={titi=1, tutu=2}, tata = 3, tonton={4, 5}} will iterate through
+-- ("toto.titi",1), ("toto.tutu",2), ("tata",3) ("tonton.1", 4), ("tonton.2"=5)
+--
+
 function recursivepairs(t, prefix)
     checks('table', '?string')
     local function it(t, prefix, cp)
@@ -214,13 +240,15 @@ function recursivepairs(t, prefix)
 end
 
 --------------------------------------------------------------------------------
---- Iterator that returns key/value on multiple tables.
+-- Iterator that returns key/value on multiple tables.
+--
+-- @function [parent=#utils.map] multiPairs
 -- Tables are traversed in the same order as they are passed as parameters.
 -- @param t1 first table to traverse.
 -- @param ... additional tables to traverse.
 -- @return iterator function.
---@function multiPairs
---------------------------------------------------------------------------------
+-- 
+
 function multipairs(t1, ...)
     local state = { tables = {t1, ...}, i=1, k=next(t1) }
     local function f()

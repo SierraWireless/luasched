@@ -2,23 +2,29 @@
 -- Declare module and import dependencies
 -----------------------------------------------------------------------------
 local require = require
+local sched = require 'sched'
 local base = _G
 require 'coxpcall'
 local copcall = copcall
 local string = require("string")
 local math = require("math")
 local socket = require("socket.core")
+local tableutils = require 'utils.table'
 
 -----------------------------------------------------------------------------
 -- Addon in order to support multithread socket (non blocking the VM
 -- This is a copas equivalent
 -----------------------------------------------------------------------------
 
--- Redefines LuaSocket functions with coroutine safe versions
+-----------------------------------------------------------------------------
+-- Redefines LuaSocket try/protect mechanism in a coroutine-safe way.
+-----------------------------------------------------------------------------
+
 local function statusHandler(status, ...)
     if status then return ... end
     return nil, ...
 end
+
 function socket.protect(func)
     return function (...)
         return statusHandler(copcall(func, ...))
@@ -38,6 +44,8 @@ function socket.newtry(finalizer)
     end
 end
 
+socket.try = base.assert
+
 local os_time = (require 'os').time
 local table = require 'table'
 local tonumber = base.tonumber
@@ -51,8 +59,6 @@ local totaltimeout = base.setmetatable({}, {__mode="kv"})
 ---------------------------------------------------------------------------
 -- TCP blocking methods redifinitions
 ---------------------------------------------------------------------------
-local sched = require 'sched'
-local tableutils = require 'utils.table'
 
 local tcpmeth = reg["tcp{master}"].__index
 

@@ -1,4 +1,6 @@
----LTN12 source utils.
+---
+-- LTN12 source utils.  
+--
 -- LNT12 stands for Lua Technical Note #12. It deals with sources, sinks, filters, etc.
 --
 -- You can read the official technical note at [Filters Sources And Sinks](http://lua-users.org/wiki/FiltersSourcesAndSinks) article page.
@@ -7,7 +9,8 @@
 --
 -- This module provides extra LTN12 sources.
 --
---@module utils.ltn12.source
+-- @module utils.ltn12.source
+-- 
 
 local checks = require 'checks'
 local ltn12 = require 'ltn12'
@@ -16,11 +19,13 @@ local table = table
 local M = {}
 
 --------------------------------------------------------------------------------
---- Transforms a LTN12 source into a string.
+-- Transforms a LTN12 source into a string.
+--
+-- @function [parent=#utils.ltn12.source] toString
 -- @param src LTN12 source.
 -- @return string. 
--- @function toString
---------------------------------------------------------------------------------
+--
+
 local function tostring(src)
     checks('function|table')
     local snk, dump = ltn12.sink.table()
@@ -29,12 +34,14 @@ local function tostring(src)
 end
 
 --------------------------------------------------------------------------------
---- Returns a LTN12 source on table.
+-- Returns a LTN12 source on table.
+--
+-- @function [parent=#utils.ltn12.source] table
 -- @param t the table, must be a list (indexed by integer).
 -- @param empty optional boolean, true to remove the table's values.
 -- @return LTN12 source function on the table.
--- @function table
---------------------------------------------------------------------------------
+--
+
 local function table(t, empty)
     checks('table', '?boolean')
     local index = 0  

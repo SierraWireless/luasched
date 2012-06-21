@@ -50,8 +50,8 @@ verified:
  The above propositions are listed in the order in which they are
  tried by `check`. The higher they appear in the list, the faster
  `checks` accepts aconforming argument. For instance,
- `checks("number")` is faster than `checkers.mynumber(x) return
- type(x)=="number" end; checks("mynumber")`.
+ `checks("number")` is faster than
+ `checkers.mynumber=function(x) return type(x)=="number" end; checks("mynumber")`.
 
 Usage examples
 --------------
@@ -112,10 +112,11 @@ Usage examples
 #ifdef  WITH_SUM_TYPES
 
 /** Generate and throw an error.
-@param level    stack level where the error must be reported
-@param narg     indice of the erroneous argument
+@function [parent=#global] error
+@param level stack level where the error must be reported
+@param narg indice of the erroneous argument
 @param expected name of the expected type
-@param got      name of the type actually found
+@param got name of the type actually found
 
 @return never returns (throws a Lua error instead) */
 static int error(
@@ -148,9 +149,10 @@ a list of type names separate by '|' chars.
 If `WITH_SUM_TYPES` is disabled, the expectedTypes list must have one
 element, i.e. no '|' separator character.
 
+@function [parent=#global] matches
 @param  actualType the type of the tested object
 @param  expectedTypes the list of types listed as acceptable in `checks()`
-        for this argument
+ for this argument
 @return whether `actualType` is listed in `expectedTypes`.
 */
 static int matches( const char *actualType, const char *expectedTypes) {
@@ -178,10 +180,10 @@ argument #`i` in stack frame #`level` isn't as described by `t_i`, for
 i in `[1...n]`.  `level` is optional, it defaults to one (checks the
 function immediately calling `checks`).
 
-@function checks
+@function [parent=#global] checks
 @param level the number of stack levels to ignore in the error message,
-       should it be produced. Optional, defaults to 1.
-@param ... one type string per expected argument.
+ should it be produced. Optional, defaults to 1.
+@param varargs one type string per expected argument.
 @return nothing on success, throw an error on failure.
 */
 static int checks( lua_State *L) {
@@ -279,7 +281,7 @@ Example
        return x^(1/2)
      end
 
-@table checkers
+@type checkers
  */
 
 int luaopen_checks( lua_State *L) {

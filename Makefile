@@ -9,7 +9,7 @@ LIB_OPTION = -shared #for Linux
 # Where C sources can be found
 SRC = c
 
-all: checks.so log/store.so socket/core.so telnet.so pack.so
+all: checks.so log/store.so socket/core.so telnet.so pack.so sched/posixsignal.so luatobin.so
 
 fetch:
 	lua fetch.lua
@@ -35,6 +35,10 @@ SOCKET_O1 = auxiliar buffer except inet io luasocket	\
             options select tcp timeout udp usocket
 SOCKET_O  = $(patsubst %,$(SRC)/socket/%.o,$(SOCKET_O1))
 
+POSIXSIGNAL_H1 = lposixsignal
+POSIXSIGNAL_H = $(patsubst %,$(SRC)/%.h,$(POSIXSIGNAL_H1))
+POSIXSIGNAL_O1 = lposixsignal
+POSIXSIGNAL_O = $(patsubst %,$(SRC)/%.o,$(POSIXSIGNAL_O1))
 
 TELNET_H1 = actions buffers editor history teel \
             teel_internal telnet
@@ -54,6 +58,9 @@ MIME_H  = $(patsubst %,$(SRC)/%.h,$(MIME_H1))
 MIME_O1 = mime
 MIME_O  = $(patsubst %,$(SRC)/%.c,$(MIME_O1))
 
+LUATOBIN_O1 = luatobin awt_endian
+LUATOBIN_O = $(patsubst %,$(SRC)/%.c,$(LUATOBIN_O1))
+
 
 checks.so: $(CHECKS_O) $(CHECKS_H)
 	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(CHECKS_O)
@@ -64,6 +71,9 @@ log/store.so: $(LOG_O) $(LOG_H)
 socket/core.so: $(SOCKET_O) $(SOCKET_H)
 	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(SOCKET_O)
 
+sched/posixsignal.so: $(POSIXSIGNAL_O) $(POSIXSIGNAL_H)
+	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(POSIXSIGNAL_O)
+
 telnet.so: $(TELNET_O) $(TELNET_H)
 	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(TELNET_O)
 
@@ -73,8 +83,11 @@ pack.so: $(LPACK_O) $(LPACK_H)
 mime.so: $(MIME_O) $(MIME_H)
 	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(MIME_O)
 
+luatobin.so: $(LUATOBIN_O) $(LUATOBIN_H)
+	$(CC) $(CFLAGS) -o $@ $(LIB_OPTION) $(LUATOBIN_O)
+
 clean:
-	rm -f *.so $(SRC)/*.o $(SRC)/log/*.o log/*.so $(SRC)/socket/*.o socket/*.so $(SRC)/telnet/*.o
+	rm -f *.so $(SRC)/*.o $(SRC)/log/*.o log/*.so $(SRC)/socket/*.o socket/*.so $(SRC)/telnet/*.o $(SRC)/sched/*.so
 
 doc:
 	ldoc .

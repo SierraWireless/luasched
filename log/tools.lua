@@ -1,6 +1,6 @@
+local sched = require"sched"
 local logstore = require"log.store"
 local log = require"log"
-local sched = require"sched"
 local unpack = unpack
 local assert = assert
 local tostring = tostring
