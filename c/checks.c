@@ -241,7 +241,7 @@ static int checks( lua_State *L) {
                 r = lua_pcall( L, 1, 1, 0);       // val, checkers, result || msg
                 if( ! r && lua_toboolean( L, -1)) {// val, checkers, result==true
                     lua_pop( L, 3);                                          // -
-                    return 0;
+                    break;
                 } else {                               // val, checkers, errormsg
                     lua_pop( L, 1);                              // val, checkers
                 }
