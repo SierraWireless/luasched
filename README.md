@@ -1,4 +1,9 @@
-(c) Sierra Wireless, 2007-2012
+(c) Sierra Wireless, 2007-2013
+
+WARNING
+=======
+
+**The scheduler is now distributed as part of [Mihini](http://www.eclipse.org/mihini/). This version isn't maintained anymore.**
 
 About
 =====
