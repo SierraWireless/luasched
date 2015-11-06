@@ -121,10 +121,10 @@ end
 -- the delay has elapsed.
 -- Those timers are non cancelable.
 -- Return the name of the event that will be sent at expiration.
+-- Timer in the past (t<0) will be scheduled as soon as possible.
 -------------------------------------------------------------------------------------
 function set(t, em, ev)
-	t = math.ceil(t)
-	assert(t>=0, "parameter must be a positive number")
+    t = t>0 and t or 0 -- treat negative value as 0
 	local nd = os.time() + t
 	em = em or 'timer'
 	ev = ev or "@"..nd
